@@ -17,9 +17,11 @@ class Example(QWidget):
         self.initUI1()
 
     def getImage(self):
-        x = self.x_coord.text()
-        y = self.y_coord.text()
-        map_request = f"http://static-maps.yandex.ru/1.x/?ll={x},{y}&spn={self.s},{self.s}&l=map"
+        if not self.initcompl:
+            self.x = float(self.x_coord.text())
+            self.y = float(self.y_coord.text())
+            self.initcompl = True
+        map_request = f"http://static-maps.yandex.ru/1.x/?ll={self.x},{self.y}&spn={self.s},{self.s}&l=map"
         response = requests.get(map_request)
 
         if not response:
@@ -33,6 +35,11 @@ class Example(QWidget):
             file.write(response.content)
         self.pixmap = QPixmap(self.map_file)
         self.image.setPixmap(self.pixmap)
+        self.btn.setEnabled(False)
+        self.x_coord.setEnabled(False)
+        self.x_text.setEnabled(False)
+        self.y_coord.setEnabled(False)
+        self.y_text.setEnabled(False)
         self.btn.setHidden(True)
         self.x_coord.setHidden(True)
         self.x_text.setHidden(True)
@@ -61,9 +68,16 @@ class Example(QWidget):
         self.btn.move(275, 225)
         self.btn.clicked.connect(self.getImage)
 
+        self.x = 0
+        self.y = 0
+        self.x_b_lim = -180
+        self.x_t_lim = 180
+        self.y_b_lim = -90
+        self.y_t_lim = 90
         self.s = 0.002
         self.s_t_lim = 0.064
         self.s_b_lim = 0.001
+        self.initcompl = False
 
 
     def initUI2(self):
@@ -71,15 +85,31 @@ class Example(QWidget):
         self.setWindowTitle('Отображение карты')
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_PageUp:
-            self.s *= 2
-            if self.s > self.s_t_lim:
-                self.s = self.s_t_lim
-            self.getImage()
-        elif event.key() == Qt.Key_PageDown:
-            self.s /= 2
-            if self.s < self.s_b_lim:
-                self.s = self.s_b_lim
+        if self.initcompl:
+            if event.key() == Qt.Key_PageUp:
+                self.s *= 2
+                if self.s > self.s_t_lim:
+                    self.s = self.s_t_lim
+            elif event.key() == Qt.Key_PageDown:
+                self.s /= 2
+                if self.s < self.s_b_lim:
+                    self.s = self.s_b_lim
+            if event.key() == Qt.Key_Up:
+                self.y += self.s
+                if self.y + self.s > self.y_t_lim:
+                    self.y = self.y_t_lim - self.s
+            elif event.key() == Qt.Key_Down:
+                self.y -= self.s
+                if self.y - self.s < self.y_b_lim:
+                    self.y = self.y_b_lim + self.s
+            if event.key() == Qt.Key_Right:
+                self.x += self.s
+                if self.x + self.s > self.x_t_lim:
+                    self.x = self.x_t_lim - self.s
+            elif event.key() == Qt.Key_Left:
+                self.x -= self.s
+                if self.x - self.s < self.x_b_lim:
+                    self.x = self.x_b_lim + self.s
             self.getImage()
 
     def closeEvent(self, event):
