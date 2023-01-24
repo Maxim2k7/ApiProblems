@@ -3,6 +3,7 @@ import os
 import sys
 
 import requests
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit
 
@@ -18,7 +19,7 @@ class Example(QWidget):
     def getImage(self):
         x = self.x_coord.text()
         y = self.y_coord.text()
-        map_request = f"http://static-maps.yandex.ru/1.x/?ll={x},{y}&spn=0.002,0.002&l=map"
+        map_request = f"http://static-maps.yandex.ru/1.x/?ll={x},{y}&spn={self.s},{self.s}&l=map"
         response = requests.get(map_request)
 
         if not response:
@@ -60,10 +61,26 @@ class Example(QWidget):
         self.btn.move(275, 225)
         self.btn.clicked.connect(self.getImage)
 
+        self.s = 0.002
+        self.s_t_lim = 0.064
+        self.s_b_lim = 0.001
+
 
     def initUI2(self):
         self.setGeometry(100, 100, *SCREEN_SIZE)
         self.setWindowTitle('Отображение карты')
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_PageUp:
+            self.s *= 2
+            if self.s > self.s_t_lim:
+                self.s = self.s_t_lim
+            self.getImage()
+        elif event.key() == Qt.Key_PageDown:
+            self.s /= 2
+            if self.s < self.s_b_lim:
+                self.s = self.s_b_lim
+            self.getImage()
 
     def closeEvent(self, event):
         if self.map_file != None:
