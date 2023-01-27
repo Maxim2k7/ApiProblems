@@ -5,16 +5,53 @@ import sys
 import requests
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QLineEdit, QInputDialog
 
 SCREEN_SIZE = [600, 450]
 
 
-class Example(QWidget):
+class Example(QMainWindow):
     def __init__(self):
         super().__init__()
         self.map_file = None
-        self.initUI1()
+        self.setGeometry(100, 100, *SCREEN_SIZE)
+        self.setWindowTitle('Отображение карты')
+
+        self.image = QLabel(self)
+        self.image.move(0, 0)
+        self.image.resize(600, 450)
+        self.x_text = QLabel(self)
+        self.x_text.setText("Первая координата:")
+        self.x_text.move(150, 150)
+        self.y_text = QLabel(self)
+        self.y_text.setText("Вторая координата:")
+        self.y_text.move(350, 150)
+        self.x_coord = QLineEdit(self)
+        self.x_coord.move(150, 175)
+        self.y_coord = QLineEdit(self)
+        self.y_coord.move(350, 175)
+        self.btn = QPushButton(self)
+        self.btn.setText("Получить карту")
+        self.btn.move(250, 225)
+        self.btn.clicked.connect(self.getImage)
+        self.maptpmenu_btn = QPushButton(self)
+        self.maptpmenu_btn.setText("Выбрать слой")
+        self.maptpmenu_btn.move(475, 15)
+        self.maptpmenu_btn.setFocusPolicy(Qt.FocusPolicy())
+        self.maptpmenu_btn.clicked.connect(self.set_map_type)
+
+        self.x = 0
+        self.y = 0
+        self.x_b_lim = -180
+        self.x_t_lim = 180
+        self.y_b_lim = -90
+        self.y_t_lim = 90
+        self.s = 0.002
+        self.s_t_lim = 0.064
+        self.s_b_lim = 0.001
+        self.map_type = "map"
+        self.initcompl = False
+        self.setMouseTracking(True)
 
     def getImage(self):
         if not self.initcompl:
@@ -46,43 +83,10 @@ class Example(QWidget):
         self.y_coord.setHidden(True)
         self.y_text.setHidden(True)
 
-    def initUI1(self):
-        self.setGeometry(100, 100, *SCREEN_SIZE)
-        self.setWindowTitle('Отображение карты')
-
-        self.image = QLabel(self)
-        self.image.move(0, 0)
-        self.image.resize(600, 450)
-        self.x_text = QLabel(self)
-        self.x_text.setText("Первая координата:")
-        self.x_text.move(150, 150)
-        self.y_text = QLabel(self)
-        self.y_text.setText("Вторая координата:")
-        self.y_text.move(350, 150)
-        self.x_coord = QLineEdit(self)
-        self.x_coord.move(150, 175)
-        self.y_coord = QLineEdit(self)
-        self.y_coord.move(350, 175)
-        self.btn = QPushButton(self)
-        self.btn.setText("Получить карту")
-        self.btn.move(275, 225)
-        self.btn.clicked.connect(self.getImage)
-
-        self.x = 0
-        self.y = 0
-        self.x_b_lim = -180
-        self.x_t_lim = 180
-        self.y_b_lim = -90
-        self.y_t_lim = 90
-        self.s = 0.002
-        self.s_t_lim = 0.064
-        self.s_b_lim = 0.001
-        self.initcompl = False
-
-
-    def initUI2(self):
-        self.setGeometry(100, 100, *SCREEN_SIZE)
-        self.setWindowTitle('Отображение карты')
+    def set_map_type(self):
+        country, ok_pressed = QInputDialog.getItem(
+            self, "Выберите вашу страну", "Откуда ты?",
+            ("Россия", "Германия", "США"), 1, False)
 
     def keyPressEvent(self, event):
         if self.initcompl:
