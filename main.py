@@ -58,7 +58,7 @@ class Example(QMainWindow):
             self.x = float(self.x_coord.text())
             self.y = float(self.y_coord.text())
             self.initcompl = True
-        map_request = f"http://static-maps.yandex.ru/1.x/?ll={self.x},{self.y}&spn={self.s},{self.s}&l=map"
+        map_request = f"http://static-maps.yandex.ru/1.x/?ll={self.x},{self.y}&spn={self.s},{self.s}&l={self.map_type}"
         response = requests.get(map_request)
 
         if not response:
@@ -84,9 +84,18 @@ class Example(QMainWindow):
         self.y_text.setHidden(True)
 
     def set_map_type(self):
-        country, ok_pressed = QInputDialog.getItem(
-            self, "Выберите вашу страну", "Откуда ты?",
-            ("Россия", "Германия", "США"), 1, False)
+        map_type, ok_pressed = QInputDialog.getItem(
+            self, "Выберите тип карты", "Тип карты",
+            ("Схема", "Спутник", "Гибрид"), 0, False)
+        if ok_pressed:
+            if map_type == "Схема":
+                self.map_type = "map"
+            elif map_type == "Спутник":
+                self.map_type = "sat"
+            else:
+                self.map_type = "sat,skl"
+            if self.initcompl:
+                self.getImage()
 
     def keyPressEvent(self, event):
         if self.initcompl:
